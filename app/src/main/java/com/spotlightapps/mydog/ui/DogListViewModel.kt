@@ -32,6 +32,7 @@ class DogListViewModel @Inject constructor(
             try {
                 val breedListResponse = appRepository.getBreedList().await()
                 _breeds.value = breedListResponse
+                _apiCallStatus.value = ApiCallStatus.SUCCESS
             } catch (e: Exception) {
                 e.printStackTrace()
                 _apiCallStatus.value = ApiCallStatus.FAILED
