@@ -9,10 +9,12 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import com.spotlightapps.mydog.adapter.DogImageAdapter
 import com.spotlightapps.mydog.data.ApiCallStatus
 import com.spotlightapps.mydog.databinding.FragmentDogListBinding
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
+import javax.inject.Inject
 
 
 /**
@@ -23,6 +25,9 @@ class DogListFragment : Fragment() {
 
     private var _binding: FragmentDogListBinding? = null
     private val viewModel: DogListViewModel by viewModels()
+
+    @Inject
+    private lateinit var adapter: DogImageAdapter
 
     // This property is only valid between onCreateView and
     // onDestroyView.
@@ -54,7 +59,7 @@ class DogListFragment : Fragment() {
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {
-               //Do Nothing
+                //Do Nothing
             }
 
         }
