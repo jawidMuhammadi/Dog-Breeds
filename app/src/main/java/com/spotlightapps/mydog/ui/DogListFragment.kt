@@ -13,8 +13,6 @@ import com.spotlightapps.mydog.adapter.DogImageAdapter
 import com.spotlightapps.mydog.data.ApiCallStatus
 import com.spotlightapps.mydog.databinding.FragmentDogListBinding
 import dagger.hilt.android.AndroidEntryPoint
-import java.util.*
-import javax.inject.Inject
 
 
 /**
@@ -25,9 +23,7 @@ class DogListFragment : Fragment() {
 
     private var _binding: FragmentDogListBinding? = null
     private val viewModel: DogListViewModel by viewModels()
-
-    @Inject
-    private lateinit var adapter: DogImageAdapter
+    private val adapter = DogImageAdapter()
 
     // This property is only valid between onCreateView and
     // onDestroyView.
@@ -47,6 +43,7 @@ class DogListFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         viewModel.getBreedList()
         setObservers()
+        binding.rvDogImage.adapter = adapter
 
         binding.spBreeds.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
@@ -55,7 +52,8 @@ class DogListFragment : Fragment() {
                 position: Int,
                 id: Long
             ) {
-
+                viewModel.getDogsImageList(position)
+                adapter.submitList(emptyList())
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {
@@ -77,6 +75,10 @@ class DogListFragment : Fragment() {
                 ApiCallStatus.SUCCESS -> binding.progressBar.visibility = View.GONE
                 else -> binding.progressBar.visibility = View.GONE
             }
+        })
+
+        viewModel.dogImages.observe(viewLifecycleOwner, {
+            adapter.submitList(it)
         })
     }
 

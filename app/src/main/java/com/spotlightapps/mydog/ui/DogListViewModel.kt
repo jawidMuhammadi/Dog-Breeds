@@ -23,8 +23,13 @@ class DogListViewModel @Inject constructor(
     private var _breeds = MutableLiveData<List<Breed>?>()
     val breedList: LiveData<List<Breed>?> = _breeds
 
+    private var _dogImages = MutableLiveData<List<String?>>()
+    val dogImages: LiveData<List<String?>> = _dogImages
+
     private var _apiCallStatus = MutableLiveData<ApiCallStatus>()
     val apiCallStatus: LiveData<ApiCallStatus> = _apiCallStatus
+
+    private var breedsIdList = emptyList<Int?>()
 
     fun getBreedList() {
         viewModelScope.launch {
@@ -32,6 +37,22 @@ class DogListViewModel @Inject constructor(
             try {
                 val breedListResponse = appRepository.getBreedList().await()
                 _breeds.value = breedListResponse
+                breedsIdList = breedListResponse!!.map { breed -> breed.id }
+                _apiCallStatus.value = ApiCallStatus.SUCCESS
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _apiCallStatus.value = ApiCallStatus.FAILED
+            }
+        }
+    }
+
+    fun getDogsImageList(position: Int) {
+        viewModelScope.launch {
+            _apiCallStatus.value = ApiCallStatus.PROGRESS
+            try {
+                val response =
+                    appRepository.getDogImageList(breedsIdList[position]!!).await()
+                _dogImages.value = response.map { item -> item.url }
                 _apiCallStatus.value = ApiCallStatus.SUCCESS
             } catch (e: Exception) {
                 e.printStackTrace()

@@ -6,16 +6,15 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.spotlightapps.mydog.R
 import com.spotlightapps.mydog.databinding.DogImageItemBinding
-import javax.inject.Inject
 
 /**
  * Created by Ahmad Jawid Muhammadi
  * on 05-12-2021.
  */
 
-class DogImageAdapter @Inject constructor() :
-    ListAdapter<String, DogImageViewHolder>(DogImageDiff) {
+class DogImageAdapter : ListAdapter<String, DogImageViewHolder>(DogImageDiff) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DogImageViewHolder {
         return DogImageViewHolder.from(parent)
@@ -40,7 +39,10 @@ class DogImageViewHolder private constructor(
     }
 
     fun bind(url: String) {
-        Glide.with(binding.imageView.context).load(url).into(binding.imageView)
+        Glide.with(binding.imageView.context)
+            .load(url)
+            .placeholder(R.drawable.progress_animation)
+            .into(binding.imageView)
     }
 }
 

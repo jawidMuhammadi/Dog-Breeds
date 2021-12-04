@@ -2,6 +2,7 @@ package com.spotlightapps.mydog
 
 import com.spotlightapps.mydog.data.remote.ApiManager
 import com.spotlightapps.mydog.model.breed.Breed
+import com.spotlightapps.mydog.model.dogimage.DogImages
 import kotlinx.coroutines.Deferred
 import javax.inject.Inject
 
@@ -18,4 +19,11 @@ class AppRepository @Inject constructor(
             apiManager.appApiServices.getBreedsAsync()
         } else TODO("implement offline feature logic")
     }
+
+    fun getDogImageList(breedId: Int, isToForceRemote: Boolean = true): Deferred<DogImages> {
+        return if (isToForceRemote) {
+            apiManager.appApiServices.getDogImagesAsync(breedId)
+        } else TODO("implement offline feature logic")
+    }
+
 }
