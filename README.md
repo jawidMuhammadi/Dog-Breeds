@@ -6,7 +6,7 @@ This is a sample app that shows a list of dog images of a chose breed
 - **Hilt**: Dependency injection
 - **Retrofit, OkHttp, Gson and Kotlin Coroutines Adapter**: Networking
 - **LiveData**: Observe data to update UI
-- **Glide**: Displaying images
+- **Glide**: Downloading and displaying images
 - **MVVM**: Architecture of the project
 - **Navigation**
 - **View Binding**
