@@ -1,5 +1,5 @@
 # Dog-Breeds
-This is a sample app that shows a list of dog images of a chose breed
+This is a sample app that shows a list of dog images of a selected dog breed
 
 ## Libraries and Project Architecture:
 - **Coroutines**: Multithreading and asynchronous API Call (Deferred and Await)
