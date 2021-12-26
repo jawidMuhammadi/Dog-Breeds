@@ -1,9 +1,11 @@
 package com.spotlightapps.mydog
 
 import com.spotlightapps.mydog.data.remote.ApiManager
-import com.spotlightapps.mydog.model.breed.Breed
-import com.spotlightapps.mydog.model.dogimage.DogImages
-import kotlinx.coroutines.Deferred
+import com.spotlightapps.mydog.model.dogimage.Breed
+import com.spotlightapps.mydog.model.dogimage.DogImage
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
 
 /**
@@ -14,16 +16,30 @@ import javax.inject.Inject
 class AppRepository @Inject constructor(
     private val apiManager: ApiManager
 ) {
-    fun getBreedList(isToForceRemote: Boolean = true): Deferred<List<Breed>?> {
-        return if (isToForceRemote) {
-            apiManager.appApiServices.getBreedsAsync()
-        } else TODO("implement offline feature logic")
+    //Mutex to make writes to cached value thread safe
+    private val mutex = Mutex()
+
+    private var breedList: List<Breed>? = emptyList()
+    private var dogImageList: List<DogImage> = emptyList()
+
+    fun getBreedList(isRefresh: Boolean = false) = flow {
+        if (isRefresh || breedList?.isEmpty() == true) {
+            val breeds = apiManager.appApiServices.getBreedsAsync()
+            mutex.withLock {
+                breedList = breeds?.map { it.toBreedModel() }
+            }
+        }
+        emit(mutex.withLock { breedList })
     }
 
-    fun getDogImageList(breedId: Int, isToForceRemote: Boolean = true): Deferred<DogImages> {
-        return if (isToForceRemote) {
-            apiManager.appApiServices.getDogImagesAsync(breedId)
-        } else TODO("implement offline feature logic")
+    fun getDogImageList(breedId: Int, isRefresh: Boolean = false) = flow {
+        if (isRefresh || dogImageList.isEmpty()) {
+            val imageList = apiManager.appApiServices.getDogImagesAsync(breedId)
+            mutex.withLock {
+                dogImageList = imageList.map { it.toDogImageModel() }
+            }
+        }
+        emit(mutex.withLock { dogImageList })
     }
 
 }

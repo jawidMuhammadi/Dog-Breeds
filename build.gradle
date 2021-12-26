@@ -25,4 +25,5 @@ ext {
     nav_version = "2.3.5"
     coroutines_adapter = "0.9.2"
     glide = "4.12.0"
+    lifecycle_version = "2.4.0"
 }

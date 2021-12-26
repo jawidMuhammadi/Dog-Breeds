@@ -3,7 +3,7 @@ package com.spotlightapps.mydog.model.dogimage
 
 import com.google.gson.annotations.SerializedName
 
-data class Breed(
+data class BreedApiModel(
     @SerializedName("bred_for")
     var bredFor: String?,
     @SerializedName("breed_group")
@@ -24,4 +24,14 @@ data class Breed(
     var temperament: String?,
     @SerializedName("weight")
     var weight: Weight?
+) {
+    fun toBreedModel() = Breed(
+        id = id,
+        name = name
+    )
+}
+
+data class Breed(
+    var id: Int?,
+    var name: String?
 )

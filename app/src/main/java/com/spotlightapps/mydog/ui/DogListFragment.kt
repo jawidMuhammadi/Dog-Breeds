@@ -7,12 +7,20 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.Spinner
+import androidx.databinding.BindingAdapter
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.recyclerview.widget.RecyclerView
 import com.spotlightapps.mydog.adapter.DogImageAdapter
-import com.spotlightapps.mydog.data.ApiCallStatus
 import com.spotlightapps.mydog.databinding.FragmentDogListBinding
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 
 
 /**
@@ -33,17 +41,27 @@ class DogListFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-
-        _binding = FragmentDogListBinding.inflate(inflater, container, false)
+        _binding = FragmentDogListBinding.inflate(inflater, container, false).apply {
+            lifecycleOwner = viewLifecycleOwner
+        }
+        binding.viewModel = viewModel
         return binding.root
 
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel.getBreedList()
-        setObservers()
         binding.rvDogImage.adapter = adapter
+
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState
+                    .map { it.isFetchingData }
+                    .collect {
+                        binding.progressBar.visibility = if (it) View.VISIBLE else View.GONE
+                    }
+            }
+        }
 
         binding.spBreeds.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
@@ -63,37 +81,28 @@ class DogListFragment : Fragment() {
         }
     }
 
-    private fun setObservers() {
-        viewModel.breedList.observe(viewLifecycleOwner, { breedList ->
-            val breedsName: List<String?>? = breedList?.map { list -> list.name }
-            breedsName?.let { setBreedsSpinnerAdapter(it) }
-        })
-
-        viewModel.apiCallStatus.observe(viewLifecycleOwner, {
-            when (it) {
-                ApiCallStatus.PROGRESS -> binding.progressBar.visibility = View.VISIBLE
-                ApiCallStatus.SUCCESS -> binding.progressBar.visibility = View.GONE
-                else -> binding.progressBar.visibility = View.GONE
-            }
-        })
-
-        viewModel.dogImages.observe(viewLifecycleOwner, {
-            adapter.submitList(it)
-        })
-    }
-
-    private fun setBreedsSpinnerAdapter(breeds: List<String?>) {
-        val adapter: ArrayAdapter<String> = ArrayAdapter<String>(
-            requireContext(),
-            R.layout.simple_spinner_item,
-            breeds
-        )
-        adapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item)
-        binding.spBreeds.adapter = adapter
-    }
-
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+}
+
+@BindingAdapter(value = ["breedItems"])
+fun spinnerItems(spinner: Spinner, breeds: List<String?>?) {
+    breeds ?: return
+    val adapter: ArrayAdapter<String> = ArrayAdapter<String>(
+        spinner.context,
+        R.layout.simple_spinner_item,
+        breeds
+    )
+    adapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item)
+    spinner.adapter = adapter
+}
+
+@BindingAdapter(value = ["dogPicItems"])
+fun dogPicItems(recyclerView: RecyclerView, breeds: List<String?>?) {
+    breeds ?: return
+    (recyclerView.adapter as DogImageAdapter).apply {
+        submitList(breeds)
     }
 }
