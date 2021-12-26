@@ -20,7 +20,7 @@ class AppModule {
 
     @Singleton
     @Provides
-    fun providesDogImageRepository(dogApiService: DogApiService): DogRepository =
+    fun providesDogRepository(dogApiService: DogApiService): DogRepository =
         DefaultDogRepository(dogApiService)
 
     @Singleton
