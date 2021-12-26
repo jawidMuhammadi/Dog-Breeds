@@ -21,21 +21,21 @@ data class DogImagesApiModel(
     )
 }
 
+data class Height(
+    @SerializedName("imperial")
+    var imperial: String?,
+    @SerializedName("metric")
+    var metric: String?
+)
+
+data class Weight(
+    @SerializedName("imperial")
+    var imperial: String?,
+    @SerializedName("metric")
+    var metric: String?
+)
+
 data class DogImage(
     var id: String?,
     var url: String?
-)
-
- data class Height(
-    @SerializedName("imperial")
-    var imperial: String?,
-    @SerializedName("metric")
-    var metric: String?
-)
-
- data class Weight(
-    @SerializedName("imperial")
-    var imperial: String?,
-    @SerializedName("metric")
-    var metric: String?
 )
