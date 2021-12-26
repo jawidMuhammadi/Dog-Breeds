@@ -2,7 +2,7 @@ package com.spotlightapps.mydog.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.spotlightapps.mydog.AppRepository
+import com.spotlightapps.mydog.DogRepository
 import com.spotlightapps.mydog.util.update
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -21,8 +21,8 @@ data class DogListUiState(
 )
 
 @HiltViewModel
-class DogListViewModel @Inject constructor(
-    private val appRepository: AppRepository
+open class DogListViewModel @Inject constructor(
+    private val defaultDogRepository: DogRepository
 ) : ViewModel() {
 
     private var _dogImage = MutableStateFlow(emptyList<String?>())
@@ -33,7 +33,7 @@ class DogListViewModel @Inject constructor(
 
     private var breedsIdList = emptyList<Int?>()
 
-    val breeds = appRepository.getBreedList()
+    val breeds = defaultDogRepository.getBreedList(false)
         .flowOn(Dispatchers.IO)
         .onEach { bread -> breedsIdList = bread!!.map { it.id } }
         .onCompletion { _uiState.value = DogListUiState(isFetchingData = false) }
@@ -45,11 +45,11 @@ class DogListViewModel @Inject constructor(
             it.copy(isFetchingData = true)
         }
         viewModelScope.launch {
-            appRepository.getDogImageList(breedsIdList[position]!!, true)
+            defaultDogRepository.getDogImageList(breedsIdList[position]!!, true)
                 .catch { e -> e.printStackTrace() }
                 .onCompletion { _uiState.update { it.copy(isFetchingData = false) } }
                 .collect {
-                    _dogImage.value = it.map { it.url }
+                    _dogImage.value = it.map { it?.url }
                 }
         }
     }

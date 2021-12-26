@@ -1,30 +1,36 @@
 package com.spotlightapps.mydog
 
-import com.spotlightapps.mydog.data.remote.ApiManager
+import com.spotlightapps.mydog.data.api.DogApiService
 import com.spotlightapps.mydog.model.dogimage.Breed
 import com.spotlightapps.mydog.model.dogimage.DogImage
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import javax.inject.Inject
 
 /**
  * Created by Ahmad Jawid Muhammadi
  * on 04-12-2021.
  */
 
-class AppRepository @Inject constructor(
-    private val apiManager: ApiManager
-) {
-    //Mutex to make writes to cached value thread safe
+
+interface DogRepository {
+    fun getBreedList(isRefresh: Boolean): Flow<List<Breed>?>
+    fun getDogImageList(breedId: Int, isRefresh: Boolean = false): Flow<List<DogImage?>>
+}
+
+class DefaultDogRepository constructor(
+    private val dogApiService: DogApiService
+) : DogRepository {
+    //Mutex to make writes to cached values thread safe
     private val mutex = Mutex()
 
     private var breedList: List<Breed>? = emptyList()
     private var dogImageList: List<DogImage> = emptyList()
 
-    fun getBreedList(isRefresh: Boolean = false) = flow {
+    override fun getBreedList(isRefresh: Boolean): Flow<List<Breed>?> = flow {
         if (isRefresh || breedList?.isEmpty() == true) {
-            val breeds = apiManager.appApiServices.getBreedsAsync()
+            val breeds = dogApiService.getBreedsAsync()
             mutex.withLock {
                 breedList = breeds?.map { it.toBreedModel() }
             }
@@ -32,9 +38,9 @@ class AppRepository @Inject constructor(
         emit(mutex.withLock { breedList })
     }
 
-    fun getDogImageList(breedId: Int, isRefresh: Boolean = false) = flow {
+    override fun getDogImageList(breedId: Int, isRefresh: Boolean) = flow {
         if (isRefresh || dogImageList.isEmpty()) {
-            val imageList = apiManager.appApiServices.getDogImagesAsync(breedId)
+            val imageList = dogApiService.getDogImagesAsync(breedId)
             mutex.withLock {
                 dogImageList = imageList.map { it.toDogImageModel() }
             }
