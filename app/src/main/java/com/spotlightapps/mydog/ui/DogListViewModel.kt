@@ -33,24 +33,21 @@ open class DogListViewModel @Inject constructor(
 
     private var breedsIdList = emptyList<Int?>()
 
-    val breeds = defaultDogRepository.getBreedList(false)
-        .flowOn(Dispatchers.IO)
-        .onEach { bread -> breedsIdList = bread!!.map { it.id } }
-        .onCompletion { _uiState.value = DogListUiState(isFetchingData = false) }
-        .map { value -> value?.map { it.name } }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    val breeds = flow {
+        val breeds = defaultDogRepository.getBreedList(false)
+        breedsIdList = breeds?.map { it.id }!!
+        _uiState.value = DogListUiState(isFetchingData = false)
+        emit(breeds.map { it.name })
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     fun getDogsImageList(position: Int) {
         _uiState.update {
             it.copy(isFetchingData = true)
         }
         viewModelScope.launch {
-            defaultDogRepository.getDogImageList(breedsIdList[position]!!, true)
-                .catch { e -> e.printStackTrace() }
-                .onCompletion { _uiState.update { it.copy(isFetchingData = false) } }
-                .collect {
-                    _dogImage.value = it.map { it?.url }
-                }
+            val dogImages = defaultDogRepository.getDogImageList(breedsIdList[position]!!, true)
+            _uiState.update { it.copy(isFetchingData = false) }
+            _dogImage.value = dogImages.map { it?.url }
         }
     }
 }

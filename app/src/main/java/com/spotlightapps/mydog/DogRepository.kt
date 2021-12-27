@@ -3,10 +3,11 @@ package com.spotlightapps.mydog
 import com.spotlightapps.mydog.data.api.DogApiService
 import com.spotlightapps.mydog.model.dogimage.Breed
 import com.spotlightapps.mydog.model.dogimage.DogImage
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 
 /**
  * Created by Ahmad Jawid Muhammadi
@@ -15,12 +16,13 @@ import kotlinx.coroutines.sync.withLock
 
 
 interface DogRepository {
-    fun getBreedList(isRefresh: Boolean): Flow<List<Breed>?>
-    fun getDogImageList(breedId: Int, isRefresh: Boolean = false): Flow<List<DogImage?>>
+    suspend fun getBreedList(isRefresh: Boolean): List<Breed>?
+    suspend fun getDogImageList(breedId: Int, isRefresh: Boolean = false): List<DogImage?>
 }
 
 class DefaultDogRepository constructor(
-    private val dogApiService: DogApiService
+    private val dogApiService: DogApiService,
+    private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : DogRepository {
     //Mutex to make writes to cached values thread safe
     private val mutex = Mutex()
@@ -28,24 +30,36 @@ class DefaultDogRepository constructor(
     private var breedList: List<Breed>? = emptyList()
     private var dogImageList: List<DogImage> = emptyList()
 
-    override fun getBreedList(isRefresh: Boolean): Flow<List<Breed>?> = flow {
-        if (isRefresh || breedList?.isEmpty() == true) {
-            val breeds = dogApiService.getBreedsAsync()
-            mutex.withLock {
-                breedList = breeds?.map { it.toBreedModel() }
+    override suspend fun getBreedList(isRefresh: Boolean): List<Breed>? {
+        withContext(dispatcher) {
+            if (isRefresh || breedList?.isEmpty() == true) {
+                try {
+                    val breeds = dogApiService.getBreedsAsync()
+                    mutex.withLock {
+                        breedList = breeds?.map { it.toBreedModel() }
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
             }
         }
-        emit(mutex.withLock { breedList })
+        return mutex.withLock { breedList }
     }
 
-    override fun getDogImageList(breedId: Int, isRefresh: Boolean) = flow {
-        if (isRefresh || dogImageList.isEmpty()) {
-            val imageList = dogApiService.getDogImagesAsync(breedId)
-            mutex.withLock {
-                dogImageList = imageList.map { it.toDogImageModel() }
+    override suspend fun getDogImageList(breedId: Int, isRefresh: Boolean): List<DogImage?> {
+        withContext(dispatcher) {
+            try {
+                if (isRefresh || dogImageList.isEmpty()) {
+                    val imageList = dogApiService.getDogImagesAsync(breedId)
+                    mutex.withLock {
+                        dogImageList = imageList.map { it.toDogImageModel() }
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
-        emit(mutex.withLock { dogImageList })
+        return dogImageList
     }
 
 }
