@@ -5,15 +5,15 @@ import com.google.gson.annotations.SerializedName
 
 data class DogImagesApiModel(
     @SerializedName("breeds")
-    var breedApiModels: List<BreedApiModel>?,
+    var breedApiModels: List<BreedApiModel>? = null,
     @SerializedName("height")
-    var height: Int?,
+    var height: Int? = null,
     @SerializedName("id")
-    var id: String?,
+    var id: String? = null,
     @SerializedName("url")
-    var url: String?,
+    var url: String? = null,
     @SerializedName("width")
-    var width: Int?
+    var width: Int? = 0
 ) {
     fun toDogImageModel() = DogImage(
         url = url,
