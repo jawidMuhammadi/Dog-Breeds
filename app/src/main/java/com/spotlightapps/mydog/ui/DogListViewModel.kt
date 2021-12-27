@@ -33,7 +33,7 @@ open class DogListViewModel @Inject constructor(
 
     private var breedsIdList = emptyList<Int?>()
 
-    val breeds = flow {
+    val breedNames = flow {
         val breeds = defaultDogRepository.getBreedList(false)
         breedsIdList = breeds?.map { it.id }!!
         _uiState.value = DogListUiState(isFetchingData = false)
@@ -45,7 +45,10 @@ open class DogListViewModel @Inject constructor(
             it.copy(isFetchingData = true)
         }
         viewModelScope.launch {
-            val dogImages = defaultDogRepository.getDogImageList(breedsIdList[position]!!, true)
+            val dogImages = defaultDogRepository.getDogImageList(
+                if (breedsIdList.isEmpty()) 0 else breedsIdList[position]!!,
+                true
+            )
             _uiState.update { it.copy(isFetchingData = false) }
             _dogImage.value = dogImages.map { it?.url }
         }

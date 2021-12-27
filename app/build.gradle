@@ -52,6 +52,10 @@ dependencies {
     //Truth
     testImplementation "com.google.truth:truth:1.1.3"
     androidTestImplementation "com.google.truth:truth:1.1.3"
+    //CoroutinesTest
+    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.0"
+    //InstantTaskExecutorRule
+    testImplementation "androidx.arch.core:core-testing:2.1.0"
 
     //Hilt
     implementation "com.google.dagger:hilt-android:$hilt_version"
