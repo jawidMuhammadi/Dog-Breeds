@@ -63,6 +63,20 @@ class DogListFragment : Fragment() {
             }
         }
 
+        lifecycleScope.launch {
+//            repeatOnLifecycle(Lifecycle.State.STARTED) {
+//                viewModel.uiState.map { it.errorMessage }
+//                    .collect {
+//                        if (it?.isNotEmpty() == true)
+//                            Toast.makeText(
+//                                context,
+//                                "Error: ${it.subSequence(0, it.length / 2)}",
+//                                Toast.LENGTH_LONG
+//                            ).show()
+//                    }
+//            }
+        }
+
         binding.spBreeds.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
                 parent: AdapterView<*>?,

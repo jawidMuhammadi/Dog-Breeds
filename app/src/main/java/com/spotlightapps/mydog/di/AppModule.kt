@@ -3,6 +3,8 @@ package com.spotlightapps.mydog.di
 import com.spotlightapps.mydog.DefaultDogRepository
 import com.spotlightapps.mydog.DogRepository
 import com.spotlightapps.mydog.data.api.DogApiService
+import com.spotlightapps.mydog.data.api.DogListRemoteDataSource
+import com.spotlightapps.mydog.data.api.DogListRemoteDataSourceImp
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -20,11 +22,16 @@ class AppModule {
 
     @Singleton
     @Provides
-    fun providesDogRepository(dogApiService: DogApiService): DogRepository =
-        DefaultDogRepository(dogApiService)
+    fun providesDogRemoteDataSource(dogApiService: DogApiService): DogListRemoteDataSource =
+        DogListRemoteDataSourceImp(dogApiService)
 
     @Singleton
     @Provides
     fun providesDogApiServices(): DogApiService = DogApiService.create()
+
+    @Singleton
+    @Provides
+    fun provideDogRepository(dogApiService: DogListRemoteDataSource): DogRepository =
+        DefaultDogRepository(dogApiService)
 
 }

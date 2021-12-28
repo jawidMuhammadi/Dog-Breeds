@@ -1,13 +1,12 @@
 package com.spotlightapps.mydog
 
 import com.spotlightapps.mydog.data.api.DogApiService
+import com.spotlightapps.mydog.data.api.DogListRemoteDataSource
 import com.spotlightapps.mydog.model.dogimage.Breed
 import com.spotlightapps.mydog.model.dogimage.DogImage
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
 /**
  * Created by Ahmad Jawid Muhammadi
@@ -16,13 +15,12 @@ import kotlinx.coroutines.withContext
 
 
 interface DogRepository {
-    suspend fun getBreedList(isRefresh: Boolean): List<Breed>?
-    suspend fun getDogImageList(breedId: Int, isRefresh: Boolean = false): List<DogImage?>
+    suspend fun getBreedList(isRefresh: Boolean): Result<List<Breed>?>
+    suspend fun getDogImageList(breedId: Int, isRefresh: Boolean = false): Result<List<DogImage?>>
 }
 
 class DefaultDogRepository constructor(
-    private val dogApiService: DogApiService,
-    private val dispatcher: CoroutineDispatcher = Dispatchers.IO
+    private val remoteDataSource: DogListRemoteDataSource
 ) : DogRepository {
     //Mutex to make writes to cached values thread safe
     private val mutex = Mutex()
@@ -30,36 +28,36 @@ class DefaultDogRepository constructor(
     private var breedList: List<Breed>? = emptyList()
     private var dogImageList: List<DogImage> = emptyList()
 
-    override suspend fun getBreedList(isRefresh: Boolean): List<Breed>? {
-        withContext(dispatcher) {
-            if (isRefresh || breedList?.isEmpty() == true) {
-                try {
-                    val breeds = dogApiService.getBreedsAsync()
-                    mutex.withLock {
-                        breedList = breeds?.map { it.toBreedModel() }
-                    }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-            }
-        }
-        return mutex.withLock { breedList }
-    }
-
-    override suspend fun getDogImageList(breedId: Int, isRefresh: Boolean): List<DogImage?> {
-        withContext(dispatcher) {
+    override suspend fun getBreedList(isRefresh: Boolean): Result<List<Breed>?> {
+        if (isRefresh || breedList?.isEmpty() == true) {
             try {
-                if (isRefresh || dogImageList.isEmpty()) {
-                    val imageList = dogApiService.getDogImagesAsync(breedId)
-                    mutex.withLock {
-                        dogImageList = imageList.map { it.toDogImageModel() }
-                    }
+                val breeds = remoteDataSource.getBreedList()
+                mutex.withLock {
+                    breedList = breeds?.map { it.toBreedModel() }
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
+                return Result.Error(e)
             }
         }
-        return dogImageList
+        return Result.Success(mutex.withLock { breedList })
+    }
+
+    override suspend fun getDogImageList(
+        breedId: Int,
+        isRefresh: Boolean
+    ): Result<List<DogImage?>> {
+        if (isRefresh || dogImageList.isEmpty()) {
+            try {
+                val imageList = remoteDataSource.getDogImageList(breedId)
+                mutex.withLock {
+                    dogImageList = imageList.map { it!!.toDogImageModel() }
+                }
+            } catch (e: Exception) {
+                return Result.Error(e)
+            }
+        }
+        return Result.Success(dogImageList)
     }
 
 }
