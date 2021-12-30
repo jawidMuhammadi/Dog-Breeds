@@ -1,12 +1,8 @@
 package com.spotlightapps.mydog.ui
 
 import com.google.common.truth.Truth.assertThat
-import com.spotlightapps.mydog.DogRepository
-import com.spotlightapps.mydog.DogRepositoryTest
-import com.spotlightapps.mydog.Result
 import com.spotlightapps.mydog.TestData
-import com.spotlightapps.mydog.model.dogimage.Breed
-import com.spotlightapps.mydog.model.dogimage.DogImage
+import com.spotlightapps.mydog.data.FakeDogRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -17,7 +13,6 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
-import java.lang.Exception
 
 /**
  * Created by Ahmad Jawid Muhammadi
@@ -88,26 +83,4 @@ class DogListViewModelTest {
         testDispatcher.cleanupTestCoroutines()
     }
 
-    internal class FakeDogRepository : DogRepository {
-
-        private var shouldReturnError = false
-
-        override suspend fun getBreedList(isRefresh: Boolean): Result<List<Breed>?> {
-            if (shouldReturnError) return Result.Error(Exception("Network Error"))
-            return Result.Success(TestData.breedList)
-        }
-
-        override suspend fun getDogImageList(
-            breedId: Int,
-            isRefresh: Boolean
-        ): Result<List<DogImage?>> {
-            if (shouldReturnError) return Result.Error(Exception("Network Error"))
-            return Result.Success(TestData.dogImageList)
-        }
-
-        fun setShouldReturnError(isReturnError: Boolean) {
-            shouldReturnError = isReturnError
-        }
-
-    }
 }
