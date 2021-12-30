@@ -2,7 +2,7 @@ package com.spotlightapps.mydog.ui
 
 import com.google.common.truth.Truth.assertThat
 import com.spotlightapps.mydog.TestData
-import com.spotlightapps.mydog.data.FakeDogRepository
+import com.spotlightapps.mydog.FakeDogRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first

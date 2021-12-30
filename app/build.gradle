@@ -36,6 +36,16 @@ android {
         dataBinding true
     }
 
+    sourceSets {
+        test {
+            java.srcDirs += "$projectDir/src/testShared"
+        }
+
+        androidTest {
+            java.srcDirs += "$projectDir/src/testShared"
+        }
+    }
+
     configurations.all {
         resolutionStrategy.force 'com.google.code.findbugs:jsr305:3.0.0'
     }

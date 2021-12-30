@@ -37,7 +37,7 @@ class DogListFragmentTest {
 
     @Test
     fun dogList_wrongTitle() {
-        onView(withId(R.id.textview_first)).check(matches(withText("Hi")))
+        onView(withId(R.id.textview_first)).check(matches(withText(R.string.select_dog_breed)))
     }
 
     @Before

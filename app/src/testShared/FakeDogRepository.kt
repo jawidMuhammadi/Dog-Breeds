@@ -1,8 +1,11 @@
 package com.spotlightapps.mydog
 
+import com.spotlightapps.mydog.DogRepository
+import com.spotlightapps.mydog.Result
+import com.spotlightapps.mydog.TestData
 import com.spotlightapps.mydog.model.dogimage.Breed
 import com.spotlightapps.mydog.model.dogimage.DogImage
-
+import java.lang.Exception
 
 /**
  * Created by Ahmad Jawid Muhammadi
@@ -15,7 +18,7 @@ class FakeDogRepository : DogRepository {
 
     override suspend fun getBreedList(isRefresh: Boolean): Result<List<Breed>?> {
         if (shouldReturnError) return Result.Error(Exception("Network Error"))
-        return Result.Success(AndroidTestData.breedList)
+        return Result.Success(TestData.breedList)
     }
 
     override suspend fun getDogImageList(
@@ -23,7 +26,7 @@ class FakeDogRepository : DogRepository {
         isRefresh: Boolean
     ): Result<List<DogImage?>> {
         if (shouldReturnError) return Result.Error(Exception("Network Error"))
-        return Result.Success(AndroidTestData.dogImageList)
+        return Result.Success(TestData.dogImageList)
     }
 
     fun setShouldReturnError(isReturnError: Boolean) {
