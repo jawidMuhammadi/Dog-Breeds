@@ -14,7 +14,7 @@ import kotlinx.coroutines.sync.withLock
 
 interface DogRepository {
     suspend fun getBreedList(isRefresh: Boolean): List<Breed>?
-    suspend fun getDogImageList(breedId: Int, isRefresh: Boolean = false): Result<List<DogImage?>>
+    suspend fun getDogImageList(breedId: Int, isRefresh: Boolean = false): List<DogImage?>
 }
 
 class DefaultDogRepository constructor(
@@ -41,18 +41,14 @@ class DefaultDogRepository constructor(
     override suspend fun getDogImageList(
         breedId: Int,
         isRefresh: Boolean
-    ): Result<List<DogImage?>> {
+    ): List<DogImage?> {
         if (isRefresh || dogImageList.isEmpty()) {
-            try {
-                val imageList = remoteDataSource.getDogImagesAsync(breedId)
-                mutex.withLock {
-                    dogImageList = imageList.map { it.toDogImageModel() }
-                }
-            } catch (e: Exception) {
-                return Result.Error(e)
+            val imageList = remoteDataSource.getDogImagesAsync(breedId)
+            mutex.withLock {
+                dogImageList = imageList.map { it.toDogImageModel() }
             }
         }
-        return Result.Success(dogImageList)
+        return mutex.withLock { dogImageList }
     }
 
 }

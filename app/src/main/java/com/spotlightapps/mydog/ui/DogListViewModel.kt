@@ -2,9 +2,10 @@ package com.spotlightapps.mydog.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.spotlightapps.mydog.DogRepository
 import com.spotlightapps.mydog.Result
+import com.spotlightapps.mydog.domain.DogImageRequest
 import com.spotlightapps.mydog.domain.LoadBreedListUseCase
+import com.spotlightapps.mydog.domain.LoadDogImagesUseCase
 import com.spotlightapps.mydog.succeeded
 import com.spotlightapps.mydog.util.update
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,7 +18,6 @@ import javax.inject.Inject
  * on 04-12-2021.
  */
 
-
 data class DogListUiState(
     val isFetchingData: Boolean = true,
     val errorMessage: String? = null
@@ -25,7 +25,7 @@ data class DogListUiState(
 
 @HiltViewModel
 open class DogListViewModel @Inject constructor(
-    private val defaultDogRepository: DogRepository,
+    private val loadDogImagesUseCase: LoadDogImagesUseCase,
     private val loadBreedListUseCase: LoadBreedListUseCase
 ) : ViewModel() {
 
@@ -53,9 +53,11 @@ open class DogListViewModel @Inject constructor(
             it.copy(isFetchingData = true)
         }
         viewModelScope.launch {
-            val dogImageResult = defaultDogRepository.getDogImageList(
-                if (breedsIdList.isEmpty()) 0 else breedsIdList[position]!!,
-                true
+            val dogImageResult = loadDogImagesUseCase(
+                DogImageRequest(
+                    true,
+                    if (breedsIdList.isEmpty()) 0 else breedsIdList[position]!!
+                )
             )
             _uiState.update { it.copy(isFetchingData = false) }
             if (dogImageResult.succeeded) {
