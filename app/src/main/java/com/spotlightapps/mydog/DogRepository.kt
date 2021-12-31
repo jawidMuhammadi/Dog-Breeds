@@ -1,12 +1,10 @@
 package com.spotlightapps.mydog
 
 import com.spotlightapps.mydog.data.api.DogApiService
-import com.spotlightapps.mydog.data.api.DogListRemoteDataSource
 import com.spotlightapps.mydog.model.dogimage.Breed
 import com.spotlightapps.mydog.model.dogimage.DogImage
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import javax.inject.Inject
 
 /**
  * Created by Ahmad Jawid Muhammadi
@@ -15,12 +13,12 @@ import javax.inject.Inject
 
 
 interface DogRepository {
-    suspend fun getBreedList(isRefresh: Boolean): Result<List<Breed>?>
+    suspend fun getBreedList(isRefresh: Boolean): List<Breed>?
     suspend fun getDogImageList(breedId: Int, isRefresh: Boolean = false): Result<List<DogImage?>>
 }
 
 class DefaultDogRepository constructor(
-    private val remoteDataSource: DogListRemoteDataSource
+    private val remoteDataSource: DogApiService
 ) : DogRepository {
     //Mutex to make writes to cached values thread safe
     private val mutex = Mutex()
@@ -28,19 +26,16 @@ class DefaultDogRepository constructor(
     private var breedList: List<Breed>? = emptyList()
     private var dogImageList: List<DogImage> = emptyList()
 
-    override suspend fun getBreedList(isRefresh: Boolean): Result<List<Breed>?> {
+    override suspend fun getBreedList(isRefresh: Boolean): List<Breed>? {
         if (isRefresh || breedList?.isEmpty() == true) {
-            try {
-                val breeds = remoteDataSource.getBreedList()
-                mutex.withLock {
-                    breedList = breeds?.map { it.toBreedModel() }
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                return Result.Error(e)
+            val breeds = remoteDataSource.getBreedsAsync()
+            mutex.withLock {
+                breedList = breeds?.map { it.toBreedModel() }
+
             }
         }
-        return Result.Success(mutex.withLock { breedList })
+        return mutex.withLock { breedList }
+
     }
 
     override suspend fun getDogImageList(
@@ -49,9 +44,9 @@ class DefaultDogRepository constructor(
     ): Result<List<DogImage?>> {
         if (isRefresh || dogImageList.isEmpty()) {
             try {
-                val imageList = remoteDataSource.getDogImageList(breedId)
+                val imageList = remoteDataSource.getDogImagesAsync(breedId)
                 mutex.withLock {
-                    dogImageList = imageList.map { it!!.toDogImageModel() }
+                    dogImageList = imageList.map { it.toDogImageModel() }
                 }
             } catch (e: Exception) {
                 return Result.Error(e)

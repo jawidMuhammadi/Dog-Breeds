@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.spotlightapps.mydog.DogRepository
 import com.spotlightapps.mydog.Result
+import com.spotlightapps.mydog.domain.LoadBreedListUseCase
 import com.spotlightapps.mydog.succeeded
 import com.spotlightapps.mydog.util.update
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -24,7 +25,8 @@ data class DogListUiState(
 
 @HiltViewModel
 open class DogListViewModel @Inject constructor(
-    private val defaultDogRepository: DogRepository
+    private val defaultDogRepository: DogRepository,
+    private val loadBreedListUseCase: LoadBreedListUseCase
 ) : ViewModel() {
 
     private var _dogImage = MutableStateFlow(emptyList<String?>())
@@ -36,7 +38,7 @@ open class DogListViewModel @Inject constructor(
     private var breedsIdList = emptyList<Int?>()
 
     val breedNames = flow {
-        val breeds = defaultDogRepository.getBreedList(false)
+        val breeds = loadBreedListUseCase(true)
         _uiState.value = DogListUiState(isFetchingData = false)
         if (breeds.succeeded) {
             breedsIdList = (breeds as Result.Success).data?.map { it.id }!!
