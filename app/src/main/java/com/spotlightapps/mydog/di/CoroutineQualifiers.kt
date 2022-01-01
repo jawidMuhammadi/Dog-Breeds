@@ -7,6 +7,11 @@ import javax.inject.Qualifier
  * on 24-12-2021.
  */
 
-@Retention(AnnotationRetention.BINARY)
+
 @Qualifier
+@Retention(AnnotationRetention.BINARY)
 annotation class IoDispatcher
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class DefaultDispatcher

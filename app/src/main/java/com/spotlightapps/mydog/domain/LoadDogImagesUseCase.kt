@@ -1,6 +1,7 @@
 package com.spotlightapps.mydog.domain
 
 import com.spotlightapps.mydog.DogRepository
+import com.spotlightapps.mydog.di.IoDispatcher
 import com.spotlightapps.mydog.model.dogimage.DogImage
 import kotlinx.coroutines.CoroutineDispatcher
 import javax.inject.Inject
@@ -14,7 +15,7 @@ data class DogImageRequest(var isToRefresh: Boolean, var breedId: Int)
 
 class LoadDogImagesUseCase @Inject constructor(
     private val dogRepository: DogRepository,
-    coroutineDispatcher: CoroutineDispatcher
+    @IoDispatcher coroutineDispatcher: CoroutineDispatcher
 ) : UseCase<DogImageRequest, List<DogImage?>>(coroutineDispatcher) {
 
     override suspend fun execute(parameters: DogImageRequest): List<DogImage?> {

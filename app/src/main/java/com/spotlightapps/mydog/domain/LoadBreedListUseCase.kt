@@ -1,6 +1,7 @@
 package com.spotlightapps.mydog.domain
 
 import com.spotlightapps.mydog.DogRepository
+import com.spotlightapps.mydog.di.IoDispatcher
 import com.spotlightapps.mydog.model.dogimage.Breed
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -13,7 +14,7 @@ import javax.inject.Inject
 
 class LoadBreedListUseCase @Inject constructor(
     private val repository: DogRepository,
-    coroutineDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    @IoDispatcher coroutineDispatcher: CoroutineDispatcher,
 ) : UseCase<Boolean, List<Breed>?>(coroutineDispatcher) {
 
     override suspend fun execute(parameters: Boolean): List<Breed>? {
