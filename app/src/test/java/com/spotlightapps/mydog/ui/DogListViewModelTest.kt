@@ -1,17 +1,16 @@
 package com.spotlightapps.mydog.ui
 
 import com.google.common.truth.Truth.assertThat
-import com.spotlightapps.mydog.TestData
 import com.spotlightapps.mydog.FakeDogRepository
-import kotlinx.coroutines.Dispatchers
+import com.spotlightapps.mydog.MainCoroutineRule
+import com.spotlightapps.mydog.TestData
+import com.spotlightapps.mydog.domain.LoadBreedListUseCase
+import com.spotlightapps.mydog.domain.LoadDogImagesUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.test.TestCoroutineDispatcher
-import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runBlockingTest
-import kotlinx.coroutines.test.setMain
-import org.junit.After
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 
 /**
@@ -24,16 +23,21 @@ import org.junit.Test
 class DogListViewModelTest {
 
     private lateinit var viewModel: DogListViewModel
-    private var testDispatcher = TestCoroutineDispatcher()
+    private var repository = FakeDogRepository()
+
+    @get: Rule
+    val rule = MainCoroutineRule()
 
     @Before
     fun setUp() {
-        Dispatchers.setMain(testDispatcher)
-        viewModel = DogListViewModel(FakeDogRepository())
+        viewModel = DogListViewModel(
+            LoadDogImagesUseCase(repository, rule.testDispatcher),
+            LoadBreedListUseCase(repository, rule.testDispatcher)
+        )
     }
 
     @Test
-    fun dogImageListLoaded() = testDispatcher.runBlockingTest {
+    fun dogImageListLoaded() = rule.testDispatcher.runBlockingTest {
         viewModel.getDogsImageList(1)
 
         val dogImage = viewModel.dogImage.first()
@@ -43,44 +47,42 @@ class DogListViewModelTest {
     }
 
     @Test
-    fun breedListLoaded() = testDispatcher.runBlockingTest {
+    fun breedListLoaded() = rule.testDispatcher.runBlockingTest {
         val breedNames = viewModel.breedNames.first()
 
         assertThat(breedNames?.get(0)).isEqualTo(TestData.dogBreed1.name)
     }
 
     @Test
-    fun loadImageList_loading() = testDispatcher.runBlockingTest {
-        testDispatcher.pauseDispatcher()
+    fun loadImageList_loading() = rule.testDispatcher.runBlockingTest {
+        rule.testDispatcher.pauseDispatcher()
         //When
         viewModel.getDogsImageList(0)
 
         //Then
         assertThat(viewModel.uiState.value.isFetchingData).isTrue()
 
-        testDispatcher.resumeDispatcher()
+        rule.testDispatcher.resumeDispatcher()
         assertThat(viewModel.uiState.value.isFetchingData).isFalse()
     }
 
     @Test
-    fun loadImageList_returnsError() = testDispatcher.runBlockingTest {
+    fun loadImageList_returnsError() = rule.testDispatcher.runBlockingTest {
         //Given
-        val repository = FakeDogRepository().also {
-            it.setShouldReturnError(true)
+        repository.apply {
+            setShouldReturnError(true)
         }
-        viewModel = DogListViewModel(repository)
+
+        viewModel = DogListViewModel(
+            LoadDogImagesUseCase(repository, rule.testDispatcher),
+            LoadBreedListUseCase(repository, rule.testDispatcher)
+        )
 
         //When
         viewModel.getDogsImageList(0)
 
         //Then
         assertThat(viewModel.uiState.value.errorMessage).isEqualTo("Network Error")
-    }
-
-    @After
-    fun tearDown() {
-        Dispatchers.resetMain()
-        testDispatcher.cleanupTestCoroutines()
     }
 
 }
