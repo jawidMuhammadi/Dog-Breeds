@@ -6,6 +6,7 @@ import com.spotlightapps.mydog.MainCoroutineRule
 import com.spotlightapps.mydog.TestData
 import com.spotlightapps.mydog.domain.LoadBreedListUseCase
 import com.spotlightapps.mydog.domain.LoadDogImagesUseCase
+import com.spotlightapps.mydog.runBlockingTest
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runBlockingTest
@@ -37,7 +38,7 @@ class DogListViewModelTest {
     }
 
     @Test
-    fun dogImageListLoaded() = rule.testDispatcher.runBlockingTest {
+    fun dogImageListLoaded() = rule.runBlockingTest {
         viewModel.getDogsImageList(1)
 
         val dogImage = viewModel.dogImage.first()
@@ -47,7 +48,7 @@ class DogListViewModelTest {
     }
 
     @Test
-    fun breedListLoaded() = rule.testDispatcher.runBlockingTest {
+    fun breedListLoaded() = rule.runBlockingTest {
         val breedNames = viewModel.breedNames.first()
 
         assertThat(breedNames?.get(0)).isEqualTo(TestData.dogBreed1.name)

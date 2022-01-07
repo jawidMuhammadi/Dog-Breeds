@@ -9,8 +9,4 @@ import dagger.hilt.android.HiltAndroidApp
  */
 
 @HiltAndroidApp
-class DogApplication : Application() {
-    override fun onCreate() {
-        super.onCreate()
-    }
-}
+class DogApplication : Application()

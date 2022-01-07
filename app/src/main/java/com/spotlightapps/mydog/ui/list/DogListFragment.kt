@@ -1,4 +1,4 @@
-package com.spotlightapps.mydog.ui
+package com.spotlightapps.mydog.ui.list
 
 import android.R
 import android.os.Bundle
@@ -17,6 +17,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.RecyclerView
 import com.spotlightapps.mydog.adapter.DogImageAdapter
 import com.spotlightapps.mydog.databinding.FragmentDogListBinding
+import com.spotlightapps.mydog.ui.DogListViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.map

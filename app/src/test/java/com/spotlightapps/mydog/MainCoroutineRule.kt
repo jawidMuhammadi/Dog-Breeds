@@ -1,10 +1,10 @@
 package com.spotlightapps.mydog
 
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.TestCoroutineDispatcher
-import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.setMain
+import kotlinx.coroutines.test.*
+import org.junit.Test
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
 
@@ -30,3 +30,12 @@ class MainCoroutineRule : TestWatcher() {
     }
 
 }
+
+@ExperimentalCoroutinesApi
+fun MainCoroutineRule.runBlockingTest(block: suspend TestCoroutineScope.() -> Unit) {
+    this.testDispatcher.runBlockingTest {
+        block()
+    }
+}
+
+fun MainCoroutineRule.coroutineScope() = CoroutineScope(testDispatcher)

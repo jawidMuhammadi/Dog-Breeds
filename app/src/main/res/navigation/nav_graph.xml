@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/DogListFragment"
-        android:name="com.spotlightapps.mydog.ui.DogListFragment"
+        android:name="com.spotlightapps.mydog.ui.list.DogListFragment"
         android:label="@string/first_fragment_label"
         tools:layout="@layout/fragment_dog_list"/>
 </navigation>
