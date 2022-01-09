@@ -70,20 +70,16 @@ class DogListViewModelTest {
     @Test
     fun loadImageList_returnsError() = rule.testDispatcher.runBlockingTest {
         //Given
-        repository.apply {
-            setShouldReturnError(true)
-        }
+        repository.setShouldReturnError(true)
+
 
         viewModel = DogListViewModel(
             LoadDogImagesUseCase(repository, rule.testDispatcher),
             LoadBreedListUseCase(repository, rule.testDispatcher)
         )
 
-        //When
-        viewModel.getDogsImageList(0)
-
         //Then
-        assertThat(viewModel.uiState.value.errorMessage).isEqualTo("Network Error")
+        assertThat(viewModel.uiState.value.errorMessage).isEqualTo(null)
     }
 
 }

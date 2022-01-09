@@ -13,6 +13,7 @@ class FakeDogRepository : DogRepository {
     private var shouldReturnError = false
 
     override suspend fun getBreedList(isRefresh: Boolean): List<Breed> {
+        if(shouldReturnError) throw Exception("Test API call failed")
         return TestData.breedList
     }
 
